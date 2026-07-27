@@ -1,0 +1,61 @@
+import numpy as np
+np.random.seed(42)
+ 
+# ==========================================================
+# Simulation: can reverse causation ALONE manufacture an
+# apparent "protective effect" of higher body mass in the
+# elderly during acute illness -- with NO true reserve effect?
+# Then: what if a REAL reserve effect also exists?
+# ==========================================================
+ 
+N = 100_000
+ 
+def run_world(true_reserve_effect):
+    """
+    Build a synthetic elderly population.
+    - Everyone has an underlying 'hidden frailty/illness burden' (unobserved).
+    - Hidden illness CAUSES weight loss (reverse causation) -> thinner.
+    - Hidden illness raises death risk.
+    - Body mass MAY independently protect via reserve (true_reserve_effect).
+    We then do the naive analysis a typical study does: look at whether
+    higher observed body mass is associated with lower mortality.
+    """
+    # hidden illness burden, 0 (healthy) .. 1 (very ill)
+    illness = np.random.beta(2, 5, size=N)
+ 
+    # baseline body-mass index-like score, centered ~26, plus noise
+    base_mass = np.random.normal(26, 4, size=N)
+    # reverse causation: illness strips mass off
+    observed_mass = base_mass - 8.0 * illness + np.random.normal(0, 1, size=N)
+ 
+    # probability of death during an acute-illness window
+    # driven UP by hidden illness, driven DOWN by true reserve (if any)
+    logit = (-2.0
+             + 4.0 * illness                          # illness kills
+             - true_reserve_effect * (observed_mass - 26) / 4.0)  # reserve protects
+    p_death = 1 / (1 + np.exp(-logit))
+    death = np.random.rand(N) < p_death
+ 
+    # NAIVE ANALYSIS: split into "leaner" vs "heavier" by median observed mass
+    heavier = observed_mass > np.median(observed_mass)
+    mort_heavier = death[heavier].mean()
+    mort_leaner  = death[~heavier].mean()
+    return mort_leaner, mort_heavier
+ 
+print("=== WORLD A: NO true reserve effect (pure reverse causation) ===")
+lean, heavy = run_world(true_reserve_effect=0.0)
+print(f"  Mortality, leaner group:  {lean:.1%}")
+print(f"  Mortality, heavier group: {heavy:.1%}")
+print(f"  Apparent 'protection' of being heavier: {lean - heavy:+.1%}")
+print(f"  (True reserve effect built in: NONE. Any gap here is pure artifact.)\n")
+ 
+print("=== WORLD B: REAL reserve effect ALSO present ===")
+lean, heavy = run_world(true_reserve_effect=1.5)
+print(f"  Mortality, leaner group:  {lean:.1%}")
+print(f"  Mortality, heavier group: {heavy:.1%}")
+print(f"  Apparent 'protection' of being heavier: {lean - heavy:+.1%}\n")
+ 
+print("Interpretation: if World A already shows a large apparent 'protection'")
+print("with NO real effect, the observed paradox is at least partly an artifact.")
+print("If World B's gap is meaningfully larger, a real reserve effect is")
+print("distinguishable ON TOP of the artifact -- the empirical question.")
