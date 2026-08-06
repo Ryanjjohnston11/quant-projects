@@ -1,10 +1,9 @@
-# Quantitative Research Portfolio
+# Research Portfolio
 
-Mathematics Student @ Rutgers NB
+Mathematics Student, Rutgers NB
 
-Independent quantitative research and projects.
+Independent research and projects in quantum biology and systematic trading.
 
-Contact #
+........
 
-Open to quantitative research, trading, and systematic strategy discussions.  
-Feel free to reach out via email - 00londonthethird@gmail.com
+Email: 00londonthethird@gmail.com
